@@ -1,0 +1,196 @@
+<!DOCTYPE html><html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pro Image Splitter</title><!-- JSZip Library --><script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script><style>
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family: Arial, sans-serif;
+}
+
+body{
+background:linear-gradient(135deg,#000000,#1a0000);
+color:white;
+min-height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
+padding:20px;
+}
+
+.container{
+max-width:1000px;
+width:100%;
+background:#0a0a0a;
+padding:25px;
+border-radius:20px;
+box-shadow:0 0 40px rgba(255,0,0,0.3);
+text-align:center;
+}
+
+h1{
+margin-bottom:20px;
+color:#ff0000;
+}
+
+.upload-box{
+border:2px dashed #ff0000;
+padding:30px;
+border-radius:15px;
+cursor:pointer;
+margin-bottom:20px;
+}
+
+.upload-box:hover{
+background:#140000;
+}
+
+button{
+padding:12px 25px;
+background:#ff0000;
+color:white;
+border:none;
+border-radius:10px;
+font-size:16px;
+cursor:pointer;
+transition:0.3s;
+margin:5px;
+}
+
+button:hover{
+background:#cc0000;
+}
+
+#preview{
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:10px;
+margin-top:20px;
+}
+
+canvas{
+width:100%;
+border-radius:10px;
+border:2px solid #ff0000;
+}
+
+.info{
+margin-top:15px;
+color:#aaa;
+}
+
+</style></head>
+<body><div class="container"><div class="menu">
+<button onclick="setSplit(3,2)">6 Split</button>
+<button onclick="setSplit(3,3)">9 Split</button>
+<button onclick="setSplit(2,2)">4 Split</button>
+<button onclick="clearAll()">Clear</button>
+</div><h1>🔥 Pro Image Splitter</h1><label class="upload-box">
+<input type="file" id="upload" accept="image/*" hidden>
+📁 Click Here To Upload Image
+</label><br><button onclick="splitImage()">✂️ Split Image</button> <button onclick="downloadZip()">📦 Download ZIP</button>
+
+<div class="info">Split image into 6 parts & download as ZIP</div><div id="preview"></div></div><script>
+
+let splitImages = [];
+let rows = 2;
+let cols = 3;
+
+function setSplit(c,r){
+cols = c;
+rows = r;
+alert('Split Mode: ' + (c*r) + ' Images');
+}
+
+function clearAll(){
+document.getElementById('preview').innerHTML='';
+splitImages=[];
+}
+
+function splitImage(){
+
+splitImages = [];
+
+const fileInput = document.getElementById('upload');
+const file = fileInput.files[0];
+
+if(!file){
+alert('Please upload image first');
+return;
+}
+
+const img = new Image();
+
+img.onload = function(){
+
+const rows = 2;
+const cols = 3;
+
+const pieceWidth = img.width / cols;
+const pieceHeight = img.height / rows;
+
+const preview = document.getElementById('preview');
+preview.innerHTML = '';
+
+for(let y=0;y<rows;y++){
+for(let x=0;x<cols;x++){
+
+const canvas = document.createElement('canvas');
+const ctx = canvas.getContext('2d');
+
+canvas.width = pieceWidth;
+canvas.height = pieceHeight;
+
+ctx.drawImage(
+img,
+x * pieceWidth,
+y * pieceHeight,
+pieceWidth,
+pieceHeight,
+0,
+0,
+pieceWidth,
+pieceHeight
+);
+
+preview.appendChild(canvas);
+
+splitImages.push(canvas);
+
+}
+}
+
+}
+
+img.src = URL.createObjectURL(file);
+
+}
+
+function downloadZip(){
+
+if(splitImages.length === 0){
+alert('Please split image first');
+return;
+}
+
+const zip = new JSZip();
+
+splitImages.forEach((canvas,index)=>{
+
+const imgData = canvas.toDataURL("image/png");
+const base64 = imgData.split(',')[1];
+
+zip.file(`image_${index+1}.png`, base64, {base64:true});
+
+});
+
+zip.generateAsync({type:"blob"}).then(function(content){
+saveAs(content, "Split_Images.zip");
+});
+
+}
+
+</script></body>
+</html>
